@@ -13,11 +13,14 @@ ZSH_THEME="powerlevel9k"
 # POWERLEVEL9K SETTINGS
 POWERLEVEL9K_MODE='awesome-patched'
 POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX=''
-POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="%K{white}%F{black} \UF43A  `date +%H:%M` %f%k%F{white}%f " 
+POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="%{%B%F{white}%K{red}%} \UFB7E %{%b%f%k%F{red}%} %{%f%}"
+
 # Prompt 
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(custom_user status dir vcs node_version)
-POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(root_indicator history date)
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(custom_user dir vcs)
+POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status background_jobs command_execution_time time)
 POWERLEVEL9K_PROMPT_ON_NEWLINE=true
+POWERLEVEL9K_RPROMPT_ON_NEWLINE=true
+
 # Dir
 POWERLEVEL9K_HOME_ICON="\UF015"
 POWERLEVEL9K_HOME_SUB_ICON="\UF74A"
@@ -46,15 +49,18 @@ POWERLEVEL9K_VCS_MODIFIED_FOREGROUND='black'
 POWERLEVEL9K_STATUS_OK_FOREGROUND='lightgreen'
 
 # Date 
-POWERLEVEL9K_DATE_FORMAT="%D{%d.%m.%y}"
-POWERLEVEL9K_DATE_ICON="\UF073"
+POWERLEVEL9K_DATE_FORMAT=""
+POWERLEVEL9K_DATE_ICON=""
+POWERLEVEL9K_TIME_FORMAT="%D{\UF43A %I:%M%p \UF073 %d.%m.%y}"
+POWERLEVEL9K_TIME_ICON=""
 
 # User with icons
 user_with_icon() {
     echo -n "\UF302 tungle"
 }
 POWERLEVEL9K_CUSTOM_USER="user_with_icon"
-POWERLEVEL9K_CUSTOM_USER_FOREGROUND="black"
+POWERLEVEL9K_CUSTOM_USER_BACKGROUND="red"
+POWERLEVEL9K_CUSTOM_USER_FOREGROUND="white"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -108,7 +114,7 @@ POWERLEVEL9K_CUSTOM_USER_FOREGROUND="black"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git python brew osx pip colorize heroku vscode)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -149,3 +155,11 @@ alias la="colorls --dark -1 -a --sd --sf"
 alias ll="colorls --dark -lA --sd"
 alias lgs="colorls --dark --gs"
 alias lgst="colorls --dark --gs --tree"
+# split tab vertically
+alias stv="vsplit_tab"
+# split tab horizontally
+alias sth="split_tab"
+
+export NVM_DIR="/Users/tungle/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+source /Users/tungle/Projects/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
