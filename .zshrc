@@ -51,7 +51,7 @@ POWERLEVEL9K_STATUS_OK_FOREGROUND='lightgreen'
 # Date 
 POWERLEVEL9K_DATE_FORMAT=""
 POWERLEVEL9K_DATE_ICON=""
-POWERLEVEL9K_TIME_FORMAT="%D{\UF43A %I:%M%p \UF073 %d.%m.%y}"
+POWERLEVEL9K_TIME_FORMAT="%D{\UF43A %I:%M%p \UF073 %m.%d.%y}"
 POWERLEVEL9K_TIME_ICON=""
 
 # User with icons
@@ -159,7 +159,9 @@ alias lgst="colorls --dark --gs --tree"
 alias stv="vsplit_tab"
 # split tab horizontally
 alias sth="split_tab"
-
+# speedtest
+alias spt="speedtest-cli"
 export NVM_DIR="/Users/tungle/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 source /Users/tungle/Projects/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+export PATH="/usr/local/opt/node@10/bin:$PATH"
