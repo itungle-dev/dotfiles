@@ -161,7 +161,20 @@ alias stv="vsplit_tab"
 alias sth="split_tab"
 # speedtest
 alias spt="speedtest-cli"
+# transmission-daemon
+alias tdaemon="transmission-daemon"
+alias tremote="transmission-remote"
+alias r100tor="transmission-remote -l | awk '\$2 == \"100%\"{ system(\"transmission-remote -t \" \$1 \" --remove\") }'"
+
+# kill notification
+alias knot="killall NotificationCenter"
 export NVM_DIR="/Users/tungle/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 source /Users/tungle/Projects/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 export PATH="/usr/local/opt/node@10/bin:$PATH"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export ANDROID_SDK="/Users/tungle/Library/Android/sdk"
+export PATH="/Users/tungle/Library/Android/sdk/platform-tools:$PATH"
+
+
+
