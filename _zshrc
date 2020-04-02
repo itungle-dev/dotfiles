@@ -1,0 +1,483 @@
+##
+## Environment Vars
+##
+
+# Commands
+
+export LESS="-R"
+
+# Java
+
+export ANT_OPTS="-server -verbose:gc -Xloggc:/tmp/ant-gc.log -Xms2g -Xmx4g -Xss2m -Xverify:none -XX:+DisableExplicitGC -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCCause -XX:+PrintGCDetails -XX:+UseParallelOldGC -XX:HeapDumpPath=/tmp/ant-oom-heap-dump.bin -XX:MaxNewSize=512m -XX:MaxPermSize=512m -XX:MaxTenuringThreshold=0 -XX:NewSize=256m -XX:PermSize=100m -XX:SurvivorRatio=65536 -XX:TargetSurvivorRatio=0"
+export GRADLE_OPTS="-Xms2g -Xmx4g"
+
+export JAVA7_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_80.jdk/Contents/Home"
+export JAVA8_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home"
+export JAVA_LATEST_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.1.jdk/Contents/Home"
+
+export JAVA_HOME="$JAVA_LATEST_HOME"
+
+# Terminal
+
+export PS1="%K{15}%B[%n %*] %F{12}%7~%k →%f%b "
+export CLICOLOR=1
+export LSCOLORS=GxGxhxDxfxhxhxhxhxcxcx
+
+# Path
+
+#export PATH="$PATH:$(cd ../bin;pwd)"
+
+export PATH="$PATH:/usr/local/opt/ant@1.9/bin"
+export PATH="$PATH:/usr/local/opt/mysql@5.6/bin"
+
+##
+## Bash Completions
+##
+# bash `brew --prefix`/etc/bash_completion
+
+# [ -d /usr/local/etc/bash_completion.d ] && . /usr/local/etc/bash_completion.d/*
+
+##
+## Alias and Helpers
+##
+
+# Build tools
+
+alias aa="ant all"
+
+abs() {
+	BUILD_FILE=$(pfind build.gradle build.xml);
+
+	if [[ $BUILD_FILE =~ "build.xml" ]]; then
+		b build-service "$@";
+	else
+		b buildService "$@";
+	fi
+}
+
+ac() {
+	b clean "$@";
+}
+
+acc() {
+	BUILD_FILE=$(pfind build.gradle build.xml);
+
+	if [[ $BUILD_FILE =~ "build.xml" ]]; then
+		b compile clean "$@";
+	else
+		b classes clean "$@";
+	fi
+}
+
+ad() {
+	b deploy "$@";
+}
+
+adc() {
+	b deploy clean "$@";
+}
+
+addc() {
+	BUILD_FILE=$(pfind build.gradle build.xml);
+
+	if [[ $BUILD_FILE =~ "build.xml" ]]; then
+		b direct-deploy clean "$@";
+	else
+		b deploy clean "$@";
+	fi
+}
+
+afs() {
+	BUILD_FILE=$(pfind build.gradle build.xml);
+
+	if [[ $BUILD_FILE =~ "build.xml" ]]; then
+		b "format-source" "$@";
+	else
+		b formatSource "$@";
+	fi
+}
+
+b() {
+	(
+		CURRNET_DIR="$(pwd)";
+
+		cd -P .
+
+		BUILD_FILE="$(pfind build.gradle build.xml)";
+
+		if [ -z $BUILD_FILE ]; then
+			echo "fatal: no suitable automatic build processor found";
+
+			return;
+		fi
+
+		USER_JAVA_HOME=$JAVA_HOME;
+
+		if [[ $BUILD_FILE =~ "build.gradle" ]]; then
+			java8;
+
+			USER_DIR=$(pwd);
+
+			cd $(dirname "$BUILD_FILE");
+
+			gw "$@";
+
+			cd "$USER_DIR";
+		else
+			java7;
+
+			ant "$@" -f "$BUILD_FILE";
+		fi
+
+		export JAVA_HOME=$USER_JAVA_HOME;
+
+		cd "$CURRNET_DIR";
+	)
+}
+
+bt() {
+	BUILD_FILE=$(pfind build.gradle build.xml)
+
+	if [[ $BUILD_FILE =~ "build.xml" ]]; then
+		b compile compile-jsp format-srouce "$@"
+	else
+		b compileJava compileJSP formatSource "$@"
+	fi
+}
+
+gw() {
+	CURRNET_DIR="$(pwd)";
+
+	cd -P .
+
+	GRADLE_WRAPPER=$(pfind gradlew);
+
+	if [ -n "$GRADLE_WRAPPER" ]; then
+		$GRADLE_WRAPPER "$@";
+	else
+		echo "fatal: gradle wrapper not found";
+	fi
+
+	cd "$CURRNET_DIR";
+}
+
+# Development
+
+alias deploy="./deployer.sh"
+alias dltomcat="ant -buildfile build-dist.xml unzip-tomcat;ant all"
+
+# Directory
+
+alias ls="ls -l"
+alias lsa="ls -laG"
+alias mkdirs="mkdir -p"
+
+# Git
+
+alias gd="git difftool HEAD"
+alias gj="jack -n 1000 --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(cyan)<%an>%Creset'"
+alias gpr="bash /Users/rpark/Projects/tools/git-pull-request/git-pull-request.sh"
+alias gre="git rebase -i HEAD~15"
+
+# gcpr() {
+# 	MAIN_BRANCH="$(git config script.branch)"
+
+# 	if [ -z "$MAIN_BRANCH" ]; then
+# 		echo "fatal: script branch not set"
+# 		return;
+# 	fi
+
+# 	git checkout "$MAIN_BRANCH"
+
+# 	if [ "$1" = "-a" ]; then
+# 		CLEANUP_BRANCHES=$(git branch -a --list "*pull-request-*")
+# 	else
+# 		CLEANUP_BRANCHES=$(git branch --list "*pull-request-*")
+# 	fi
+
+# 	echo $CLEANUP_BRANCHES
+
+# 	for BRANCH in $CLEANUP_BRANCHES;
+# 	do
+# 		LOCATION=$(echo $BRANCH | cut -d"/" -f1)
+# 		REMOTE=$(echo $BRANCH | cut -d"/" -f2)
+# 		BRANCH=$(echo $BRANCH | cut -d"/" -f3)
+
+# 		if [ $LOCATION = "remotes" ] && [ $REMOTE = "origin" ]; then
+# 			git push origin ":$BRANCH"
+# 		else
+# 			git branch --delete --force "$BRANCH"
+# 		fi
+# 	done
+# }
+
+gcu() {
+	CLEANUP_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+	MAIN_BRANCH="$(git config script.branch)"
+
+	if [ -z "$MAIN_BRANCH" ]; then
+		echo "fatal: script branch not set"
+		return;
+	fi
+
+	if [ "$CLEANUP_BRANCH" = "$MAIN_BRANCH" ]; then
+		echo "fatal: unable to clean required script branch"
+		return;
+	fi
+
+	git checkout "$MAIN_BRANCH"
+
+	git branch --delete --force "$CLEANUP_BRANCH"
+}
+
+gm() {
+	MERGE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+	MAIN_BRANCH="$(git config script.branch)"
+
+	if [ -z "$MAIN_BRANCH" ]; then
+		echo "fatal: script branch not set"
+		return 1
+	fi
+
+	if [ "$CLEANUP_BRANCH" = "$MAIN_BRANCH" ]; then
+		echo "fatal: unable to merge main branch"
+		return 1
+	fi
+
+	if [ -n "$(git status --porcelain)" ]; then
+		echo "fatal: there are uncommitted changes"
+		return 1
+	fi
+
+	git checkout "$MAIN_BRANCH"
+
+	git merge "$MERGE_BRANCH" -m "DO NOT MERGE: SCRIPT FAILURE"
+
+	git pull --rebase upstream "$MAIN_BRANCH"
+
+	git branch --delete --force "$MERGE_BRANCH"
+}
+
+gp() {
+	(
+		BRANCH="$1"
+
+		if [ -z "$BRANCH" ]; then
+			BRANCH="$(git config script.branch)"
+		fi
+
+		git pull --rebase upstream "$BRANCH"
+	)
+}
+
+gup() {
+	(
+		NO_COLOR="\033[0m"
+
+		NOTICE_GARBAGE_COLLECTION_BOLD="\033[1;31m"
+
+		UPDATE_REPO_COLOR="\033[1;36m"
+		UPDATE_SKIP_COLOR="\033[0;31m"
+		UPDATE_SKIP_GC_COLOR="\033[0;31m"
+		UPDATE_STEP_COLOR="\033[0;35m"
+
+		DIR="$1"
+
+		if [ -n "$DIR" ]; then
+			cd "$DIR"
+		else
+			DIR="$(pwd)"
+		fi
+
+		git rev-parse --git-dir &> /dev/null
+
+		if [ $? -ne 0 ]; then
+			echo "fatal: Not a git repository (or any of the parent directories): .git"
+			return $?
+		fi
+
+		BRANCH="$2"
+
+		if [ -z "$BRANCH" ]; then
+			BRANCH="$(git config script.branch)"
+		fi
+
+		if [ -z "$BRANCH" ]; then
+			BRANCH=$(git rev-parse --abbrev-ref HEAD);
+		fi
+
+		if [ -z "$BRANCH" ]; then
+			return 1
+		fi
+
+		echo -e "${UPDATE_REPO_COLOR}Updating $DIR ($BRANCH)${NO_COLOR}"
+
+		if [ -n "$(git status --porcelain)" ]; then
+			echo -e ""
+			echo -e "${UPDATE_SKIP_COLOR}Skipping $DIR:$BRANCH because there are uncommitted changes.${NO_COLOR}"
+
+			return
+		fi
+
+		git checkout "$BRANCH" &> /dev/null
+
+		if [ $? -ne 0 ]; then
+			return $?
+		fi
+
+		echo -e ""
+		echo -e "${UPDATE_STEP_COLOR}Fetching...${NO_COLOR}"
+
+		git fetch --prune upstream
+
+		if [ $? -ne 0 ]; then
+			return $?
+		fi
+
+		echo -e ""
+		echo -e "${UPDATE_STEP_COLOR}Merging...${NO_COLOR}"
+
+		git merge --ff-only --no-stat "upstream/$BRANCH"
+
+		if [ $? -ne 0 ]; then
+			return $?
+		fi
+
+		echo -e ""
+		echo -e "${UPDATE_STEP_COLOR}Pushing...${NO_COLOR}"
+
+		git push
+
+		if [ $? -ne 0 ]; then
+			return $?
+		fi
+
+		GC_TIME="$(git config script.gctime)"
+		MAX_GC_TIME=$(date -v -6d +%s)
+
+		if [[ -z $GC_TIME || $MAX_GC_TIME -gt $GC_TIME ]]; then
+			echo -e ""
+			echo -e "${UPDATE_STEP_COLOR}Garbage collection...${NO_COLOR}"
+
+			if [ "$SKIP_GC" = true ]; then
+				echo -e ""
+				echo -e "${UPDATE_SKIP_GC_COLOR}Skipping garbage collection...${NO_COLOR}"
+			else
+				git gc
+
+				echo -e ""
+				echo -e "${NOTICE_GARBAGE_COLLECTION_BOLD}Garbage collected. See you in 7 days.${NO_COLOR}"
+
+				git config script.gctime "$(date +%s)"
+			fi
+		fi
+	)
+}
+
+# Docker
+
+edm() {
+	echo "Evaluating..."
+
+	docker-machine env
+
+	eval $(docker-machine env)
+}
+
+# Java
+
+java7() {
+	export JAVA_HOME=$JAVA7_HOME;
+}
+
+java8() {
+	export JAVA_HOME=$JAVA8_HOME;
+}
+
+java_latest() {
+	export JAVA_HOME=$JAVA_CURRENT_HOME
+}
+
+# Miscellaneous
+
+alias fixopenwith="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user"
+alias smite="kill -9"
+
+# MySQL
+
+alias mysql="mysql -u root"
+
+mysqlcreate() {
+	mysql <<< "drop database if exists $1; create database $1 character set utf8;"
+}
+
+# Search
+
+ff() {
+	mdfind  -onlyin . -name "kMDItemDisplayName=='$1'c"
+}
+
+ffo() {
+	FILES=$(ff $1);
+
+	if [ -z "$FILES" ]; then
+		echo "Could not find any files to open";
+
+		return;
+	fi
+
+	open $FILES
+}
+
+fs() {
+	find . -name "$1"
+}
+
+fso() {
+	FILES=$(fs $1);
+
+	if [ -z "$FILES" ]; then
+		echo "Could not find any files to open";
+
+		return;
+	fi
+
+	open $FILES
+}
+
+pfind() {
+	if [ $# -eq 0 ]; then
+		echo "usage: pfind file ...";
+		echo "";
+		echo "finds the first occurance of the file(s) in parent directories starting from"
+		echo "the current directory.";
+
+		return;
+	fi
+
+	CURRNET_DIR=$(pwd);
+
+	while [ $(pwd) != "/" ];
+	do
+		for VALUE in $@;
+		do
+			if [ -f $VALUE ]; then
+				echo "$(pwd)/$VALUE";
+
+				break 2;
+			fi
+		done
+
+		cd ..;
+	done
+
+	cd "$CURRNET_DIR";
+}
+
+# Tomcat
+
+alias rt="./catalina.sh run"
+alias st="./shutdown.sh"
+alias tt="tail -f ../logs/catalina.out"
